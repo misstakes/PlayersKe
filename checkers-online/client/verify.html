@@ -1,0 +1,43 @@
+<!-- client/verify.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verifying Payment...</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h2>⏳ Verifying your payment...</h2>
+  <p>Please wait while we confirm your transaction.</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderTrackingId = params.get("order_tracking_id");
+    const redirect = params.get("redirect");
+
+    if (!orderTrackingId || !redirect) {
+      document.body.innerHTML = "<h2>❌ Invalid verification link.</h2>";
+    } else {
+      fetch("/api/verify?order_tracking_id=" + encodeURIComponent(orderTrackingId))
+        .then(res => res.json())
+        .then(data => {
+          if (data.verified) {
+            window.location.href = redirect;
+          } else {
+            document.body.innerHTML = "<h2>❌ Payment not verified.</h2><p>Please try again.</p>";
+          }
+        })
+        .catch(() => {
+          document.body.innerHTML = "<h2>❌ Verification error.</h2><p>Try again later.</p>";
+        });
+    }
+  </script>
+</body>
+</html>

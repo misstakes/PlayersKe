@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkers Lobby</title>
+  <link rel="stylesheet" href="lobby.css">
+  <style>
+    .prize-box {
+      margin-top: 10px;
+      background: #f0f0f0;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-weight: bold;
+      color: #2c3e50;
+      display: inline-block;
+    }
+    .hidden {
+      display: none;
+    }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #fafafa;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+    button {
+      padding: 10px 15px;
+      margin-top: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    input[type="text"], input[type="number"] {
+      padding: 8px;
+      margin-top: 5px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Checkers Lobby</h1>
+
+    <div class="options">
+      <button id="joinRandomBtn">Join Random Match (Ksh <span id="rndPrice">20</span>)</button>
+      <div class="prize-box" id="randomPrizeBox">🏆 Prize: Ksh <span id="randomPrize">36</span></div>
+
+      <div class="private-room">
+        <h2>🔒 Private Room</h2>
+        Stake (multiple of 10): 
+        <input type="number" id="privateStake" value="20" step="10" min="10"><br>
+        <div class="prize-box" id="privatePrizeBox">🏆 Prize: Ksh <span id="privatePrize">36</span></div>
+        <button id="createRoomBtn">Create Room</button>
+
+        <div class="join-section">
+          <input type="text" id="roomCodeInput" placeholder="Enter room code"/>
+          <button id="joinRoomBtn">Join Room</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="roomCodeDisplay" class="hidden">
+      <p>✅ Room created! Share this code:</p>
+      <input type="text" id="generatedCode" readonly />
+      <button id="copyBtn">📋 Copy</button>
+      <button id="proceedBtn">➡️ Pay & Go</button>
+    </div>
+  </div>
+
+<!-- All other HTML above remains the same -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    async function makeMpesaPayment(amount, redirectUrl) {
+      const phone = prompt("Enter your M-Pesa phone number (07XXXXXXXX):");
+      if (!/^07\d{8}$/.test(phone)) {
+        alert("Invalid phone number format.");
+        return;
+      }
+
+      const payload = {
+        phone,
+        amount,
+        redirect: redirectUrl
+      };
+
+      try {
+        alert("Initiating payment, please wait...");
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+       form.action = '/x/Checker-main/checkers-online/client/SubmitOrderRequest.php';
+
+
+
+        for (const key in payload) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = payload[key];
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+
+      } catch (err) {
+        alert("Payment initiation failed.");
+        console.error(err);
+      }
+    }
+
+    // Hook buttons to payment
+    document.getElementById("joinRandomBtn").onclick = function () {
+      makeMpesaPayment(20, "online.html?mode=random&stake=20");
+    };
+
+    document.getElementById("createRoomBtn").onclick = function () {
+      const stake = parseInt(document.getElementById("privateStake").value);
+      if (stake < 10 || stake % 10 !== 0) {
+        alert("Stake must be at least 10 and a multiple of 10.");
+        return;
+      }
+
+      const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      document.getElementById("generatedCode").value = roomCode;
+      document.getElementById("roomCodeDisplay").classList.remove("hidden");
+
+      // You can store roomCode and stake for further use if needed
+      document.getElementById("proceedBtn").onclick = function () {
+        makeMpesaPayment(stake, `online.html?mode=private&code=${roomCode}&stake=${stake}`);
+      };
+    };
+  });
+</script>
+
+
+</body>
+</html>
+
